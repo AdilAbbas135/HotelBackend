@@ -8,7 +8,7 @@ const PORT = 4000;
 
 // Middlewears
 app.use(cors({
-  origin:[ 'http://localhost:3000', "http://localhost:5173/", "https://hotel-backend-seven.vercel.app/"],
+  origin:[ 'http://localhost:3000', "http://localhost:5173/", "https://hotel-crm-frontend.vercel.app"],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
 }));
