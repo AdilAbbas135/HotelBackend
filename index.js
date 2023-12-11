@@ -20,12 +20,12 @@ app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
 app.use("/account",cors(),require("./Routes/Account"))
-app.use("/store/attributes",require("./Routes/Store/Attributes"))
-app.use("/store",require("./Routes/Store"))
-app.use("/products",require("./Routes/Store/Products"))
-app.use("/menus",require("./Routes/Store/Menus"))
-app.use("/gallery", require("./Routes/Gallery"))
-app.use("/stripe", require("./Routes/Stripe"))
+app.use("/store/attributes",cors(),require("./Routes/Store/Attributes"))
+app.use("/store",cors(),require("./Routes/Store"))
+app.use("/products",cors(),require("./Routes/Store/Products"))
+app.use("/menus",cors(),require("./Routes/Store/Menus"))
+app.use("/gallery",cors(), require("./Routes/Gallery"))
+app.use("/stripe",cors(), require("./Routes/Stripe"))
 
 // Export the Express API
 module.exports = app;
