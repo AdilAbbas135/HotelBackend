@@ -3,7 +3,6 @@ const express = require("express");
 const connect_to_db = require("./db");
 const app = express();
 var cors = require("cors");
-const bodyParser = require('body-parser');
 const PORT = 4000;
 
 // Middlewears
@@ -20,7 +19,7 @@ app.use("/uploads", express.static("uploads"));
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
-app.use("/account",require("./Routes/Account"))
+app.use("/account",require("./Routes/Account"), cors())
 app.use("/store/attributes",require("./Routes/Store/Attributes"))
 app.use("/store",require("./Routes/Store"))
 app.use("/products",require("./Routes/Store/Products"))
