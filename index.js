@@ -19,7 +19,7 @@ app.use("/uploads", express.static("uploads"));
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
-app.use("/account",require("./Routes/Account"), cors())
+app.use("/account",cors(),require("./Routes/Account"))
 app.use("/store/attributes",require("./Routes/Store/Attributes"))
 app.use("/store",require("./Routes/Store"))
 app.use("/products",require("./Routes/Store/Products"))
