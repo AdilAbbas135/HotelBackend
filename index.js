@@ -9,7 +9,11 @@ const PORT = 4000;
 // Middlewears
 connect_to_db();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin:[ 'http://localhost:3000', "http://localhost:5173/", "https://hotel-backend-seven.vercel.app/"],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+}));
 app.use(express.urlencoded({ extended:true}))
 app.use("/uploads", express.static("uploads"));
 
