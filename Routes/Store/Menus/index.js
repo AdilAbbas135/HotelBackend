@@ -58,6 +58,26 @@ router.post("/add", VerifyToken, async (req, res) => {
     }
 })
 
+// UPDATE A SPECIFIC MENU
+router.post("/update", VerifyToken, async (req, res) => {
+    try{
+        const FindMenu=await MenuModel.findOne({_id:req.query.MenuId, Store:req.store._id})
+        if(!FindMenu){
+            return res.status(404).json({error:"Access denied"})
+        }
+        await MenuModel.findByIdAndUpdate(req.query.MenuId, {$set:{
+            Name:req.body.Name,
+                Description:req.body.Description,
+                MainImage:req.body.MainImage,
+                Products:req.body.SelectedProducts
+            }})
+        return res.status(200).json({msg:"Menu updated Successfully"})
+    }catch (error) {
+        console.log(error);
+        return res.status(500).json({error: "Internal Server Error"})
+    }
+})
+
 // FIND A SPECIFIC MENU AND ITS DETAIL OF A SPECIFIC Store
 router.get("/find", VerifyToken, async (req, res) => {
     try {

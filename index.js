@@ -7,14 +7,14 @@ const PORT = 4000;
 
 // Middlewears
 app.use(cors({
-  origin:[ 'http://localhost:3000', "http://localhost:5173/", "https://hotel-crm-frontend.vercel.app","https://hotel-crm-admin.vercel.app"],
+  origin:[ 'http://localhost:3000', "http://localhost:5173","http://localhost:5174", "https://hotel-crm-frontend.vercel.app","https://hotel-crm-admin.vercel.app"],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
 }));
 connect_to_db();
 app.use(express.json());
 app.use(express.urlencoded({ extended:true}))
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads",cors(), express.static("uploads"));
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
