@@ -46,6 +46,12 @@ const UserSchema = Schema({
     },
     StripeDetails:{
         type:Object
+    },
+    Status:{
+        type:Number,
+        //0 MEANS ORDER RECIEVED AND WEB IN UNDER PROGRESS
+        //1 MEANS STORE IS LAUNCHED AND IS WORKING
+        default: 0
     }
 }, {timestamps: true})
 const AllUsersModel = mongoose.model("users", UserSchema);
