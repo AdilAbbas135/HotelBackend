@@ -9,6 +9,9 @@ const VerifyToken = require("../../Middlewear/VerifyToken")
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const directory = `./uploads/${req.store._id}`
+        if (!fs.existsSync('./uploads/')) {
+            fs.mkdirSync('./uploads/');
+        }
         if (!fs.existsSync(directory)) {
             fs.mkdirSync(directory, {recursive: true});
         }
