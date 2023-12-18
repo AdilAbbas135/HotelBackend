@@ -20,10 +20,15 @@ router.get("/", VerifyToken, async (req, res) => {
                 localField: "MainImage",
                 foreignField: "_id",
                 as: "MainImage"
-
             }
         },{
-            $unwind:"$MainImage"
+            $addFields:{
+                    Image: { $arrayElemAt: ["$MainImage", 0]}
+            }
+        },{
+            $project:{
+                MainImage:0,
+            }
         }
         ])
         return res.status(200).json({Products})
@@ -37,7 +42,7 @@ router.post("/add", VerifyToken, async (req, res) => {
     try {
         // console.log("body is", req.body)
         // console.log("file is", req.file)
-        const {Name, Description,SelectedProducts,MainImage} = req.body
+        const {Name, Description, SelectedProducts, MainImage} = req.body
         // const SelectedProducts = JSON.parse(req.body.SelectedProducts)
         const FindMenu = await MenuModel.find({Name: Name})
         if (FindMenu?.length > 0) {
@@ -60,19 +65,21 @@ router.post("/add", VerifyToken, async (req, res) => {
 
 // UPDATE A SPECIFIC MENU
 router.post("/update", VerifyToken, async (req, res) => {
-    try{
-        const FindMenu=await MenuModel.findOne({_id:req.query.MenuId, Store:req.store._id})
-        if(!FindMenu){
-            return res.status(404).json({error:"Access denied"})
+    try {
+        const FindMenu = await MenuModel.findOne({_id: req.query.MenuId, Store: req.store._id})
+        if (!FindMenu) {
+            return res.status(404).json({error: "Access denied"})
         }
-        await MenuModel.findByIdAndUpdate(req.query.MenuId, {$set:{
-            Name:req.body.Name,
-                Description:req.body.Description,
-                MainImage:req.body.MainImage,
-                Products:req.body.SelectedProducts
-            }})
-        return res.status(200).json({msg:"Menu updated Successfully"})
-    }catch (error) {
+        await MenuModel.findByIdAndUpdate(req.query.MenuId, {
+            $set: {
+                Name: req.body.Name,
+                Description: req.body.Description,
+                MainImage: req.body.MainImage,
+                Products: req.body.SelectedProducts
+            }
+        })
+        return res.status(200).json({msg: "Menu updated Successfully"})
+    } catch (error) {
         console.log(error);
         return res.status(500).json({error: "Internal Server Error"})
     }
@@ -100,14 +107,24 @@ router.get("/find", VerifyToken, async (req, res) => {
                         as: "MainImage"
 
                     }
-                },{
-                    $unwind:"$MainImage"
                 },
+                {
+                    $addFields:{
+                        Image: { $arrayElemAt: ["$MainImage", 0]}
+                    }
+                },{
+                    $project:{
+                        MainImage:0,
+                    }
+                }
             ])
-
+            // console.log("FIND MENU IS", Menu)
+            if (Menu.length == 0) {
+                return res.status(400).json({error: "Access Denied"})
+            }
             const FindItems = await ProductModel.aggregate([{
                 $match: {
-                    _id:{
+                    _id: {
                         $in: Menu[0].Products
                     }
                 }
@@ -119,14 +136,12 @@ router.get("/find", VerifyToken, async (req, res) => {
                     as: "MainImage"
 
                 }
-            },{
-                $unwind:"$MainImage"
             }
 
             ])
-            const FinalMenu ={...Menu[0], Products:FindItems}
+            const FinalMenu = {...Menu[0], Products: FindItems}
 
-             return res.status(200).json({Menu: FinalMenu})
+            return res.status(200).json({Menu: FinalMenu})
         }
     } catch (error) {
         console.log(error)

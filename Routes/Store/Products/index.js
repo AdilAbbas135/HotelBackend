@@ -20,9 +20,15 @@ router.get("/", VerifyToken, async (req, res) => {
                 as: "MainImage"
 
             }
-        },{
-            $unwind:"$MainImage"
-        }
+        }, {
+                $addFields:{
+                    Image: { $arrayElemAt: ["$MainImage", 0]}
+                }
+            },{
+                $project:{
+                    MainImage:0,
+                }
+            }
 
         ])
         return res.status(200).json({Products})
@@ -53,6 +59,25 @@ router.post("/add", VerifyToken, async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({error: "Internal Server Error"})
+    }
+})
+
+// DELETE PRODUCT OF A SPECIFIC STORE
+router.post("/delete",VerifyToken,async(req,res)=>{
+    try{
+        const ProductId = req.query.ProductId
+        console.log("ProductId is", ProductId)
+        if (!ProductId) {
+            return res.status(400).json({error: "Access Denied"})
+        }
+        await ProductModel.deleteOne({
+            _id:ProductId,
+            Store:req.store._id
+        })
+        return res.status(200).json({msg:"Product Deleted Successfully"})
+    }catch (error) {
+        console.log(error)
+        return res.status(500).json({error:"Internal Server Error"})
     }
 })
 

@@ -29,10 +29,10 @@ const upload = multer({storage: storage,});
 // FIND ALL GALLERY IMAGES OF A SPECIFIC STORE
 router.get("/", VerifyToken, async (req, res) => {
     try {
-        const Total= await GalleryModel.countDocuments()
+        const Total = await GalleryModel.countDocuments()
         // console.log("total documents: " + total)
         const Gallery = await GalleryModel.find({Store: req.store._id})
-        return res.status(200).json({Gallery ,Total})
+        return res.status(200).json({Gallery, Total})
 
     } catch (error) {
         console.log(error)
@@ -43,18 +43,31 @@ router.get("/", VerifyToken, async (req, res) => {
 // Add a New Gallery Imasge Of A SPECIFIC STORE
 router.post("/add", VerifyToken, upload.array("files", 10), async (req, res) => {
     try {
-        let Files=[]
-        for (let i=0; i<req.files.length; i++){
-                    Files.push({
-                        Name: req.files[i].originalname,
-                        AltText:req.files[i].originalname,
-                        Path: req.files[i].path,
-                        Store: req.store._id
-                    })
+        let Files = []
+        for (let i = 0; i < req.files.length; i++) {
+            Files.push({
+                Name: req.files[i].originalname,
+                AltText: req.files[i].originalname,
+                Path: req.files[i].path,
+                Store: req.store._id
+            })
         }
-             await GalleryModel.insertMany(Files)
-        return res.status(200).json({msg:"Files Uploaded Successfully"})
+        await GalleryModel.insertMany(Files)
+        return res.status(200).json({msg: "Files Uploaded Successfully"})
 
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({error: "Internal Server Error"})
+    }
+})
+
+// DELETE A IMAGE OF A SPECIFIC STORE
+router.post("/delete", VerifyToken, async (req, res) => {
+    try {
+        // console.log(req.body)
+        await GalleryModel.deleteOne({Path:req.body.path, Store:req.store._id})
+        await fs.unlinkSync(req.body.path)
+        return res.status(200).json({msg: "Image Deleted Successfully"})
     } catch (error) {
         console.log(error)
         return res.status(500).json({error: "Internal Server Error"})
