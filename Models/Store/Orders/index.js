@@ -29,10 +29,9 @@ const OrderSchema = Schema(
         Status: {
             type: Number,
             default: 0
-            //     0 MEANS IN PROGRESS
-            // 1 MEANS DELIEVERED
-            //     2 MEANS COMPLETED
-            //     3 MEANS CANCELLED
+            // 0 MEANS IN PROGRESS
+            // 1 MEANS COMPLETED
+            // 2 MEANS CANCELLED
         },
         Store: {
             type: Schema.Types.ObjectId,

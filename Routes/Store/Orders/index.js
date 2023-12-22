@@ -108,4 +108,37 @@ router.get("/find-order", VerifyToken, async (req, res) => {
         return res.status(500).json({error: "Internal Server Error "});
     }
 })
+
+
+// FULLFILL A SPECIFIC ORDER
+router.post('/fulfill-order',VerifyToken,async(req,res)=>{
+    try{
+        // console.log(req.body)
+        const FindOrder = await OrdersModel.findByIdAndUpdate({ _id: new mongoose.Types.ObjectId(req.body.OrderId),
+            Store: new mongoose.Types.ObjectId(req.store._id)} , {$set:{
+                Status:1
+            } })
+
+        return res.status(200).json({msg:"Order Fulfilled Successfully"})
+    }catch (error) {
+        console.log(error)
+        return res.status(500).json({error:"Internal Server Error"})
+    }
+})
+
+// Cancel A SPECIFIC ORDER
+router.post('/cancel-order',VerifyToken,async(req,res)=>{
+    try{
+        // console.log(req.body)
+      await OrdersModel.findByIdAndUpdate({ _id: new mongoose.Types.ObjectId(req.body.OrderId),
+            Store: new mongoose.Types.ObjectId(req.store._id)} , {$set:{
+                Status:2
+            } })
+
+        return res.status(200).json({msg:"Order Cancelled Successfully"})
+    }catch (error) {
+        console.log(error)
+        return res.status(500).json({error:"Internal Server Error"})
+    }
+})
 module.exports = router
