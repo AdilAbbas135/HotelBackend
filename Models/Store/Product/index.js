@@ -27,6 +27,18 @@ const SingleVariantSchema = new Schema(
     },
     { timestamps: true }
 );
+
+const VariationSchema= new Schema({
+    SelectedVariants:{
+      type:[Schema.Types.ObjectId]
+    },
+    RegularPrice:{
+        type:Number,
+    },
+    SalesPrice:{
+        type:Number,
+    }
+},{timestamps:true})
 const ProductSchema=Schema({
     Name:{
         type: String,
@@ -45,7 +57,12 @@ const ProductSchema=Schema({
     },
     SingleVariant:{
         type: SingleVariantSchema,
-
+    },
+    AddedAttributes:{
+        type:Array
+    },
+    Variations:{
+      type:[VariationSchema]
     },
     DietTypes:{
         type:[String]

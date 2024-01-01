@@ -4,6 +4,8 @@ const router = express.Router();
 const VerifyToken = require("../../../Middlewear/VerifyToken")
 const ProductModel = require("../../../Models/Store/Product")
 const {default: mongoose} = require("mongoose");
+const ImagePipeLine = require("../../../utils/GetImagePipeline")
+const AttributeValuesModel = require("../../../Models/Store/Attributes/AttributeValues")
 
 // GET ALL PRODUCTS OF A SPECIFIC STORE
 router.get("/", VerifyToken, async (req, res) => {
@@ -12,24 +14,8 @@ router.get("/", VerifyToken, async (req, res) => {
             $match: {
                 Store: new mongoose.Types.ObjectId(req.store._id)
             }
-        }, {
-            $lookup: {
-                from: "galleries",
-                localField: "MainImage",
-                foreignField: "_id",
-                as: "MainImage"
-
-            }
-        }, {
-                $addFields:{
-                    Image: { $arrayElemAt: ["$MainImage", 0]}
-                }
-            },{
-                $project:{
-                    MainImage:0,
-                }
-            }
-
+        },
+            ...ImagePipeLine()
         ])
         return res.status(200).json({Products})
     } catch (error) {
@@ -41,20 +27,46 @@ router.get("/", VerifyToken, async (req, res) => {
 router.post("/add", VerifyToken, async (req, res) => {
     try {
         // console.log("Request recieved at create product route")
-        console.log("body is", req.body)
-        console.log("file is", req.file)
-        const {Name, Description, MainImage, isVariable, DietTypes, SpiceRatings, Allergens, SingleVariant} = req.body
-        await ProductModel.create({
-            Name: Name,
-            Description: Description,
-            MainImage: MainImage,
-            isVariable: isVariable,
-            SingleVariant: SingleVariant,
-            DietTypes: DietTypes,
-            SpiceRatings: SpiceRatings,
-            Allergens: Allergens,
-            Store: req.store._id
-        })
+        // console.log("body is", req.body)
+        // console.log("file is", req.file)
+        const {
+            Name,
+            Description,
+            MainImage,
+            isVariable,
+            DietTypes,
+            SpiceRatings,
+            Allergens,
+            SingleVariant,
+            AddedAttributes,
+            Variants
+        } = req.body
+        if (isVariable) {
+            await ProductModel.create({
+                Name: Name,
+                Description: Description,
+                MainImage: MainImage,
+                isVariable: isVariable,
+                DietTypes: DietTypes,
+                SpiceRatings: SpiceRatings,
+                Allergens: Allergens,
+                AddedAttributes: AddedAttributes,
+                Variations: Variants,
+                Store: req.store._id
+            })
+        } else {
+            await ProductModel.create({
+                Name: Name,
+                Description: Description,
+                MainImage: MainImage,
+                isVariable: isVariable,
+                SingleVariant: SingleVariant,
+                DietTypes: DietTypes,
+                SpiceRatings: SpiceRatings,
+                Allergens: Allergens,
+                Store: req.store._id
+            })
+        }
         return res.status(200).json({msg: "Product Created Successfully"})
     } catch (error) {
         console.log(error);
@@ -63,22 +75,86 @@ router.post("/add", VerifyToken, async (req, res) => {
 })
 
 // DELETE PRODUCT OF A SPECIFIC STORE
-router.post("/delete",VerifyToken,async(req,res)=>{
-    try{
+router.post("/delete", VerifyToken, async (req, res) => {
+    try {
         const ProductId = req.query.ProductId
         console.log("ProductId is", ProductId)
         if (!ProductId) {
             return res.status(400).json({error: "Access Denied"})
         }
         await ProductModel.deleteOne({
-            _id:ProductId,
-            Store:req.store._id
+            _id: ProductId,
+            Store: req.store._id
         })
-        return res.status(200).json({msg:"Product Deleted Successfully"})
-    }catch (error) {
+        return res.status(200).json({msg: "Product Deleted Successfully"})
+    } catch (error) {
         console.log(error)
-        return res.status(500).json({error:"Internal Server Error"})
+        return res.status(500).json({error: "Internal Server Error"})
     }
 })
 
+
+// FIND PRODUCT WITH DETAILS FOR PUBLIC VIEW
+router.get("/find", async (req, res) => {
+    try {
+        const ProductId = req.query.Id
+        console.log("Product Id: " + ProductId)
+        const FindProduct = await ProductModel.findById(ProductId)
+        if (!FindProduct) {
+            return res.status(404).json({error: "Product Not Found"})
+        }
+        if (FindProduct.isVariable) {
+            // const selectedVariantsAttributes = await AttributeValuesModel.find({
+            //     _id: { $in: [
+            //             "65672f87e76e9b0e94a06ef3",
+            //             "65672fd1e76e9b0e94a06f38"
+            //         ] }
+            // }).exec();
+            // console.log("trouubleshooting" , selectedVariantsAttributes);
+            const FinalProduct = await ProductModel.aggregate([
+                {
+                    $match: {
+                        _id: new mongoose.Types.ObjectId(ProductId)
+                    }
+                },
+                {
+                    $unwind: "$Variations"
+                },
+                {
+                    $unwind: "$Variations.SelectedVariants"
+                },
+                {
+                    $lookup: {
+                        from: "attribute-values",
+                        localField: "Variations.SelectedVariants",
+                        foreignField: "_id",
+                        as: "SelectedVariantsAttributes"
+                    }
+                },
+                {
+                    $project: {
+                        AddedAttributes: 0,
+                    }
+                },
+                ...ImagePipeLine()
+            ])
+            // console.log("Final Product is ", FinalProduct[0])
+            return res.status(200).json({Product: FinalProduct})
+        } else {
+            const FinalProduct = await ProductModel.aggregate([
+                {
+                    $match: {
+                        _id: new mongoose.Types.ObjectId(ProductId)
+                    }
+                },
+
+                ...ImagePipeLine()
+            ])
+            return res.status(200).json({Product: FinalProduct})
+        }
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({error: "Internal Server Error "})
+    }
+})
 module.exports = router
