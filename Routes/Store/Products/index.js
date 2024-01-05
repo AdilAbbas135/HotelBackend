@@ -39,7 +39,8 @@ router.post("/add", VerifyToken, async (req, res) => {
             Allergens,
             SingleVariant,
             AddedAttributes,
-            Variants
+            Variants,
+            Options
         } = req.body
         if (isVariable) {
             await ProductModel.create({
@@ -52,6 +53,7 @@ router.post("/add", VerifyToken, async (req, res) => {
                 Allergens: Allergens,
                 AddedAttributes: AddedAttributes,
                 Variations: Variants,
+                Options:Options,
                 Store: req.store._id
             })
         } else {
@@ -64,6 +66,7 @@ router.post("/add", VerifyToken, async (req, res) => {
                 DietTypes: DietTypes,
                 SpiceRatings: SpiceRatings,
                 Allergens: Allergens,
+                Options:Options,
                 Store: req.store._id
             })
         }
@@ -104,13 +107,6 @@ router.get("/find", async (req, res) => {
             return res.status(404).json({error: "Product Not Found"})
         }
         if (FindProduct.isVariable) {
-            // const selectedVariantsAttributes = await AttributeValuesModel.find({
-            //     _id: { $in: [
-            //             "65672f87e76e9b0e94a06ef3",
-            //             "65672fd1e76e9b0e94a06f38"
-            //         ] }
-            // }).exec();
-            // console.log("trouubleshooting" , selectedVariantsAttributes);
             const FinalProduct = await ProductModel.aggregate([
                 {
                     $match: {

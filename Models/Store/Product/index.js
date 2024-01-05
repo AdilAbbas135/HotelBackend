@@ -73,6 +73,9 @@ const ProductSchema=Schema({
     Allergens:{
         type:[String]
     },
+    Options:{
+        type:[Object]
+    },
    Store:{
      type:Schema.Types.ObjectId,
        required: [true, "Store id is Required"],
